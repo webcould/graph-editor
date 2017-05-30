@@ -34,6 +34,8 @@ private slots:
     void addRandomGraph();
     void removeAllGraphs();    
     void addGraph();
+    void saveGraph();
+    void loadGraph();
 private:
     Ui::MainWindow *ui;
     Graph currentGraph;

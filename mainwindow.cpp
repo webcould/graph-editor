@@ -42,11 +42,75 @@ MainWindow::MainWindow(QWidget *parent) :
     // connect menu actions
     connect(ui->actionDelete, SIGNAL(triggered(bool)), this, SLOT(removeAllGraphs()));
     connect(ui->actionAddRandom, SIGNAL(triggered(bool)), this, SLOT(addRandomGraph()));
+    connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(saveGraph()));
+    connect(ui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(loadGraph()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::saveGraph()
+{
+    QJsonObject infoObject;
+    infoObject.insert("title", QJsonValue::fromVariant(MainWindow::title->text()));
+    infoObject.insert("xaxisname", QJsonValue::fromVariant(ui->customPlot->xAxis->label()));
+    infoObject.insert("yaxisname", QJsonValue::fromVariant(ui->customPlot->yAxis->label()));
+    QJsonArray graphDataX;
+    for (int i=0; i<MainWindow::currentGraph.x.length(); i++)
+    {
+        graphDataX.push_back(MainWindow::currentGraph.x[i]);
+    }
+    infoObject.insert("data_x", graphDataX);
+    QJsonArray graphDataY;
+    for (int i=0; i<MainWindow::currentGraph.y.length(); i++)
+    {
+        graphDataY.push_back(MainWindow::currentGraph.y[i]);
+    }
+    infoObject.insert("data_y", graphDataY);
+
+    QJsonDocument json_doc(infoObject);
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить данные графика"), "", tr("Json (*.json);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+    else
+    {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            QMessageBox::information(this, tr("Не удалось сохранить файл"), file.errorString());
+            return;
+        }
+        QTextStream stream( &file );
+        stream << json_doc.toJson() << endl;
+    }
+}
+
+void MainWindow::loadGraph()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть данные графика"), "", tr("Json (*.json);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+    else
+    {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QMessageBox::information(this, tr("Не удалось открыть файл"), file.errorString());
+            return;
+        }
+        QString json_text = file.readAll();
+        file.close();
+        QJsonDocument json_doc = QJsonDocument::fromJson(json_text.toUtf8());
+        QJsonObject infoObject = json_doc.object();
+        QString ttl = infoObject["title"].toString();
+        QString xaxis = infoObject["xaxisname"].toString();
+        QString yaxis = infoObject["yaxisname"].toString();
+        //QJsonArray data_x = item["data_x"].toArray();
+        //QJsonArray data_y = item["data_y"].toArray();
+    }
 }
 
 void MainWindow::titleDoubleClick(QMouseEvent* event)
