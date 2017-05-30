@@ -103,13 +103,23 @@ void MainWindow::loadGraph()
         }
         QString json_text = file.readAll();
         file.close();
+        MainWindow::removeAllGraphs();
         QJsonDocument json_doc = QJsonDocument::fromJson(json_text.toUtf8());
         QJsonObject infoObject = json_doc.object();
-        QString ttl = infoObject["title"].toString();
-        QString xaxis = infoObject["xaxisname"].toString();
-        QString yaxis = infoObject["yaxisname"].toString();
-        //QJsonArray data_x = item["data_x"].toArray();
-        //QJsonArray data_y = item["data_y"].toArray();
+        MainWindow::currentGraph.title = infoObject["title"].toString();
+        MainWindow::currentGraph.xaxisname = infoObject["xaxisname"].toString();
+        MainWindow::currentGraph.yaxisname = infoObject["yaxisname"].toString();
+        QJsonArray data_x = infoObject["data_x"].toArray();
+        QJsonArray data_y = infoObject["data_y"].toArray();
+        QJsonValue item;
+        foreach (item, data_x) {
+            MainWindow::currentGraph.x.append(item.toDouble());
+        }
+        foreach (item, data_y) {
+            MainWindow::currentGraph.y.append(item.toDouble());
+        }
+        qDebug() << MainWindow::currentGraph.x;
+        MainWindow::addGraph();
     }
 }
 
