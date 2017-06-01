@@ -36,6 +36,8 @@ private slots:
     void addGraph();
     void saveGraph();
     void loadGraph();
+    void saveScreenshot();
+
 private:
     Ui::MainWindow *ui;
     Graph currentGraph;

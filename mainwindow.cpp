@@ -44,11 +44,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAddRandom, SIGNAL(triggered(bool)), this, SLOT(addRandomGraph()));
     connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(saveGraph()));
     connect(ui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(loadGraph()));
+    connect(ui->actionScreenshot, SIGNAL(triggered(bool)), this, SLOT(saveScreenshot()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::saveScreenshot()
+{
+    QRect rectangle = QRect(QPoint(1,1), QPoint(ui->customPlot->width(),ui->customPlot->height()));
+    QPixmap pixmap(rectangle.size());
+    ui->customPlot->render(&pixmap, QPoint(), QRegion(rectangle));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить скриншот графика"), QDir::homePath(), tr("Jpeg (*.jpg);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+    else
+    {
+        pixmap.save(fileName);
+    }
 }
 
 void MainWindow::saveGraph()
@@ -72,7 +87,7 @@ void MainWindow::saveGraph()
 
     QJsonDocument json_doc(infoObject);
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить данные графика"), "", tr("Json (*.json);;All Files (*)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить данные графика"), QDir::homePath(), tr("Json (*.json);;All Files (*)"));
     if (fileName.isEmpty())
         return;
     else
@@ -90,7 +105,7 @@ void MainWindow::saveGraph()
 
 void MainWindow::loadGraph()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть данные графика"), "", tr("Json (*.json);;All Files (*)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть данные графика"), QDir::homePath(), tr("Json (*.json);;All Files (*)"));
     if (fileName.isEmpty())
         return;
     else
@@ -118,7 +133,6 @@ void MainWindow::loadGraph()
         foreach (item, data_y) {
             MainWindow::currentGraph.y.append(item.toDouble());
         }
-        qDebug() << MainWindow::currentGraph.x;
         MainWindow::addGraph();
     }
 }
